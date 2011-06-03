@@ -1,4 +1,0 @@
-This project involves porting drivers for XMEGA to be used with FreeRTOS. It is intended to be used by students during their internships. It will include several appilications, which be based on the same framework - FreeRTOS and drivers.
-For each board a separate branch will be created, although I do not think there will be a lot of changes, considering the fact that all drivers (including buttons and LEDs) supposed to be universal.
-I would like to thank Richard Barry and Real Time Engineers for FreeRTOS and Atmel for their xmega framework.
-Have fun!
