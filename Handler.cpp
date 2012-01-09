@@ -42,6 +42,11 @@ Handler::Handler(Looper *looper) {
     messageQueue = looper->getMessageQueue();
 }
 
+/**
+ * Post Message
+ * @param msg
+ * @return true if the item was successfully posted
+ */
 bool Handler::sendMessage(Message msg) {
     return xQueueSend(messageQueue, &msg, 0);
 }
@@ -53,6 +58,7 @@ bool Handler::sendMessage(Message msg) {
  * @param arg1
  * @param arg2
  * @param ptr
+ * @return true if the item was successfully posted
  */
 bool Handler::sendMessage(char what, char arg1, char arg2, void *ptr) {
     Message msg;
@@ -68,6 +74,7 @@ bool Handler::sendMessage(char what, char arg1, char arg2, void *ptr) {
  * Post empty message
  * @param handler
  * @param what
+ * @return true if the item was successfully posted
  */
 bool Handler::sendMessage(char what) {
     return sendMessage(what, NULL, NULL, NULL);
@@ -79,8 +86,56 @@ bool Handler::sendMessage(char what) {
  * @param what
  * @param arg1
  * @param arg2
+ * @return true if the item was successfully posted
  */
 bool Handler::sendMessage(char what, char arg1, char arg2) {
     return sendMessage(what, arg1, arg2, NULL);
 }
+/**
+ * Post Message
+ * @param msg
+ * @return true if higher priority task is woken
+ */
+bool Handler::sendMessageFromISR(Message msg) {
+    return xQueueSendFromISR(messageQueue, &msg, 0);
+}
+/**
+ * Post message with arguments and a pointer to allocated data
+ * @param handler
+ * @param what
+ * @param arg1
+ * @param arg2
+ * @param ptr
+ * @return true if higher priority task is woken
+ */
+bool Handler::sendMessageFromISR(char what, char arg1, char arg2, void *ptr) {
+    Message msg;
+    msg.handler = this;
+    msg.what = what;
+    msg.arg1 = arg1;
+    msg.arg2 = arg2;
+    msg.ptr = ptr;
+    return xQueueSendFromISR(messageQueue, &msg, 0);
+}
 
+/**
+ * Post empty message
+ * @param handler
+ * @param what
+ * @return true if higher priority task is woken
+ */
+bool Handler::sendMessageFromISR(char what) {
+    return sendMessageFromISR(what, NULL, NULL, NULL);
+}
+
+/**
+ * Post message with arguments
+ * @param handler
+ * @param what
+ * @param arg1
+ * @param arg2
+ * @return true if higher priority task is woken
+ */
+bool Handler::sendMessageFromISR(char what, char arg1, char arg2) {
+    return sendMessageFromISR(what, arg1, arg2, NULL);
+}

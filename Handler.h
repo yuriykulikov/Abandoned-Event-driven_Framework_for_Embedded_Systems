@@ -45,6 +45,10 @@ public:
     bool sendMessage(char what);
     bool sendMessage(char what, char arg1, char arg2);
     bool sendMessage(char what, char arg1, char arg2, void *ptr);
+    bool sendMessageFromISR(Message msg);
+    bool sendMessageFromISR(char what);
+    bool sendMessageFromISR(char what, char arg1, char arg2);
+    bool sendMessageFromISR(char what, char arg1, char arg2, void *ptr);
 };
 
 struct MESSAGE {
