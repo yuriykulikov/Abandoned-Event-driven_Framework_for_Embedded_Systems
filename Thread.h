@@ -31,9 +31,22 @@
 class Thread {
 private:
     xTaskHandle taskHandle;
+    bool suspendsGracefully;
+    bool suspending;
 public:
+    Thread(const char *name, unsigned short stackDepth, char priority, bool suspendsGracefully);
     Thread(const char *name, unsigned short stackDepth, char priority);
     virtual void run() =0;
+    /**
+     * Suspends the thread. Attention!
+     */
+    void suspend();
+    /**
+     * Resumes the thread execution
+     */
+    void resume();
+protected:
+    void checkForSuspendRequest();
 };
 
 #endif /* THREAD_H_ */

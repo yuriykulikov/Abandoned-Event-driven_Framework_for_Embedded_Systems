@@ -27,6 +27,33 @@ extern "C" void pvTaskCode(void *pvParameters) {
     (static_cast<Thread*>(pvParameters))->run();
 }
 
-Thread::Thread(const char *name, unsigned short stackDepth, char priority) {
+Thread::Thread(const char *name, unsigned short stackDepth, char priority, bool suspendsGracefully) {
+    this->suspendsGracefully = suspendsGracefully;
+    suspending = false;
     xTaskCreate(pvTaskCode, (const signed char *) name, stackDepth, (void*) this, priority, &taskHandle);
+}
+
+Thread::Thread(const char *name, unsigned short stackDepth, char priority) {
+    this->suspendsGracefully = false;
+    suspending = false;
+    xTaskCreate(pvTaskCode, (const signed char *) name, stackDepth, (void*) this, priority, &taskHandle);
+}
+
+void Thread::suspend() {
+    if (suspendsGracefully) {
+        suspending = true;
+    } else {
+        vTaskSuspend(taskHandle);
+    }
+}
+
+void Thread::resume() {
+    vTaskResume(taskHandle);
+}
+
+void Thread::checkForSuspendRequest() {
+    if (suspending) {
+        suspending = false;
+        vTaskSuspend(taskHandle);
+    }
 }
