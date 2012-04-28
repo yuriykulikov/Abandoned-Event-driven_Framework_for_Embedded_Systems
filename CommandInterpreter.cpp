@@ -59,12 +59,59 @@ void CommandInterpreter::registerCommand(char *pgm_Cmd, char *pgm_CmdDesc, Handl
 
 void CommandInterpreter::processCommand(char *pcCommandInput, TxBuffer *txBuffer) {
     // Search for the command string in the list of registered commands starting with the second entry (first is emtpy)
-    for(InputListItem *entry = list; entry != NULL; entry = entry->pxNextEntry ) {
-        if( strcmp_P( ( const char * ) pcCommandInput, ( const char * ) entry->pcCommand ) == 0 ) {
-        /* The command has been found, the loop can exit so the command
-           can be executed. */
-            entry->handler->sendMessage(entry->what, 0, 0, txBuffer);
-            return;
+    for(InputListItem *entry = list->pxNextEntry; entry != NULL; entry = entry->pxNextEntry ) {
+        //we move cursor to the end of the string, and stop if condition is met
+        char *inputCursor = pcCommandInput;
+        char *entryCursor = entry->pcCommand;
+        char inputChar;
+        char entryChar;
+        //parse command
+        while (true) {
+            inputChar = *inputCursor++;
+            //TODO #ifdef HARVARD
+            entryChar = pgm_read_byte(entryCursor++);
+            //now we can have different situations and we have to handle them all!
+            if (inputChar == 0x00 && entryChar != 0x00 ) {
+                //command incomplete, proceed to the next command
+                break;
+            }
+            //entry ended, input not - parse args
+            if (entryChar == 0x00) {
+                //TODO optimize sometime
+                uint8_t arg[2] = {0, 0};
+                for (uint8_t args = 0; args<2; args++) {
+                    //str will be used to hold HEX args, so it has to be 4 bits
+                    char str[4] = {0, 0, 0, 0};
+                    //eat whitespace
+                    while (*inputCursor == ' ') {
+                        inputCursor++;
+                    }
+                    if (*inputCursor == 0x00) break;;
+                    //parse arg
+                    for (uint8_t i = 0; i<4; i++) {
+                        inputChar = *inputCursor++;
+                        if (inputChar == 0x00) break;
+                        if (inputChar == ' ') break;
+                        str[i] = inputChar;
+                    }
+                    arg[args] = atoi(str);
+                }
+#ifdef DEBUG
+                txBuffer->putString("sending msg, args:");
+                txBuffer->putInt(arg[0], 16);
+                txBuffer->putString(", ");
+                txBuffer->putInt(arg[1], 16);
+                txBuffer->putString("\n");
+#endif
+                entry->handler->sendMessage(entry->what, arg[0], arg[1], txBuffer);
+                //command found, return
+                return;
+            }
+            //no match - no match
+            if (inputChar != entryChar) {
+                //strings differ, proceed to the next command
+                break;
+            }
         }
     }
     // No matches were found, maybe it was a help command?
