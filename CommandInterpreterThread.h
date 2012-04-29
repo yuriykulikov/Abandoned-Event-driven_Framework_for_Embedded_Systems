@@ -21,22 +21,25 @@
 #ifndef COMMAND_INTERPRETER_THREAD_H
 #define COMMAND_INTERPRETER_THREAD_H
 
-#include "Serial.h"
+#include "RxBuffer.h"
+#include "TxBuffer.h"
 #include "Thread.h"
 
 /**
- * A Thread, which aggregates messages from the Serial input (might be USART, keyboard, etc.)
+ * A Thread, which aggregates messages from the RxBuffer input (might be USART, keyboard, etc.)
  * and invokes CommandInterpreter.processCommand(), which leads to sending a message to a
  * registered handler (if found).
  */
 class CommandInterpreterThread : public Thread {
 public:
-    CommandInterpreterThread(CommandInterpreter *interpreter, uint8_t commandInputLen, Serial *serial, const char *name, unsigned short stackDepth, char priority);
+    CommandInterpreterThread(CommandInterpreter *interpreter, uint8_t commandInputLen, RxBuffer *rxBuffer,
+            TxBuffer *txBuffer, const char *name, unsigned short stackDepth, char priority);
     void run();
 private:
     char *commandInputBuffer;
     CommandInterpreter *interpreter;
-    Serial *serial;
+    RxBuffer *rxBuffer;
+    TxBuffer *txBuffer;
 };
 
 #endif /* COMMAND_INTERPRETER_THREAD_H */

@@ -21,7 +21,7 @@
 #ifndef COMMAND_INTERPRETER_H
 #define COMMAND_INTERPRETER_H
 
-#include "Serial.h"
+#include "TxBuffer.h"
 #include "Handler.h"
 
 typedef struct InputListItem {
@@ -44,7 +44,7 @@ class CommandInterpreter {
 public:
     CommandInterpreter();
     void registerCommand(char *pgm_Cmd, char *pgm_CmdDesc, Handler *handler, char what);
-    void processCommand(char *pcCommandInput, Serial *serial);
+    void processCommand(char *pcCommandInput, TxBuffer *txBuffer);
 private:
     InputListItem *list;
 };

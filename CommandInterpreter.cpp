@@ -32,7 +32,6 @@ extern "C" {
 /* Utils includes. */
 #include "CommandInterpreter.h"
 #include "Handler.h"
-#include "Serial.h"
 
 CommandInterpreter::CommandInterpreter() {
     list = (InputListItem*) pvPortMalloc(sizeof(InputListItem));
@@ -58,28 +57,28 @@ void CommandInterpreter::registerCommand(char *pgm_Cmd, char *pgm_CmdDesc, Handl
     entry->pxNextEntry = pxNewListItem;
 }
 
-void CommandInterpreter::processCommand(char *pcCommandInput, Serial *serial) {
+void CommandInterpreter::processCommand(char *pcCommandInput, TxBuffer *txBuffer) {
     // Search for the command string in the list of registered commands starting with the second entry (first is emtpy)
     for(InputListItem *entry = list; entry != NULL; entry = entry->pxNextEntry ) {
         if( strcmp_P( ( const char * ) pcCommandInput, ( const char * ) entry->pcCommand ) == 0 ) {
         /* The command has been found, the loop can exit so the command
            can be executed. */
-            entry->handler->sendMessage(entry->what, 0, 0, serial);
+            entry->handler->sendMessage(entry->what, 0, 0, txBuffer);
             return;
         }
     }
     // No matches were found, maybe it was a help command?
     if (strcmp_P( ( const char * ) pcCommandInput, ( const char * ) Strings_HelpCmd ) == 0) {
-        serial->putPgmString(Strings_HelpCmdDesc);
+        txBuffer->putPgmString(Strings_HelpCmdDesc);
         // Search for the command string in the list of registered commands starting with the second entry (first is emtpy)
         for(InputListItem *entry = list->pxNextEntry; entry != NULL; entry = entry->pxNextEntry ) {
-            serial->putPgmString(entry->pcCommand);
-            serial->putPgmString(Strings_colon);
-            serial->putPgmString(Strings_space);
-            serial->putPgmString(entry->pcHelpString);
+            txBuffer->putPgmString(entry->pcCommand);
+            txBuffer->putPgmString(Strings_colon);
+            txBuffer->putPgmString(Strings_space);
+            txBuffer->putPgmString(entry->pcHelpString);
         }
     } else {
-        serial->putPgmString(Strings_InterpretorError);
+        txBuffer->putPgmString(Strings_InterpretorError);
     }
 }
 

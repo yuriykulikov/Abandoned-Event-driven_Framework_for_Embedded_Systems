@@ -34,13 +34,14 @@ extern "C" {
 #include "CommandInterpreter.h"
 #include "CommandInterpreterThread.h"
 #include "Thread.h"
-#include "Serial.h"
 
-CommandInterpreterThread::CommandInterpreterThread(CommandInterpreter *interpreter, uint8_t commandInputLen, Serial *serial, const char *name, unsigned short stackDepth, char priority)
-:Thread(name, stackDepth, priority){
+CommandInterpreterThread::CommandInterpreterThread(CommandInterpreter *interpreter, uint8_t commandInputLen,
+        RxBuffer *rxBuffer, TxBuffer *txBuffer, const char *name, unsigned short stackDepth, char priority)
+        :Thread(name, stackDepth, priority){
     commandInputBuffer = (char *) pvPortMalloc( sizeof(char)*commandInputLen);
     this->interpreter = interpreter;
-    this->serial = serial;
+    this->rxBuffer = rxBuffer;
+    this->txBuffer = txBuffer;
 }
 
 void CommandInterpreterThread::run() {
@@ -50,16 +51,16 @@ void CommandInterpreterThread::run() {
         //Empty the string first
         strcpy(commandInputBuffer,"");
         // Wait until the first symbol unblocks the task
-        serial->getByte(&receivedChar,portMAX_DELAY);
+        rxBuffer->getByte(&receivedChar,portMAX_DELAY);
         strncat(commandInputBuffer,&receivedChar,1);
         //Read string from queue, while data is available and put it into string
         // This loop will be over, when there is either ; or \n is received, or queue is empty for 200 ms
-        while (serial->getByte(&receivedChar,200)) {
+        while (rxBuffer->getByte(&receivedChar,200)) {
             if (receivedChar == ';') break;
             if (receivedChar == '\n') break;
             strncat(commandInputBuffer,&receivedChar,1);
         }
 
-        interpreter->processCommand(commandInputBuffer, serial);
+        interpreter->processCommand(commandInputBuffer, txBuffer);
     }
 }
