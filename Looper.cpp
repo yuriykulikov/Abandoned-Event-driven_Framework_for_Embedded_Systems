@@ -17,32 +17,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/* Scheduler include files. */
-#include "FreeRTOS.h"
-#include "task.h"
-#include "queue.h"
-
 #include "Handler.h"
 #include "Looper.h"
-#include "ExampleHandler.h"
 #include "Thread.h"
+#include "QueueWrapper.h"
 
 Looper::Looper(uint8_t messageQueueSize, const char *name, unsigned short stackDepth, char priority)
 :Thread(name, stackDepth, priority) {
-    messageQueue = xQueueCreate(messageQueueSize, sizeof(Message));
+    // since constructor init checklist doesn't work on AVRs for some reason, we have to initialize a member
+    // object messageQueue in the constructor body
+    messageQueue = Queue(messageQueueSize, sizeof(Message));
 }
 
 void Looper::run() {
     Message msg;
     //Infinite loop
     for (;;) {
-        if (xQueueReceive(messageQueue, &msg, portMAX_DELAY)) {
+        if (messageQueue.receive(&msg)) {
             // Call handleMessage from the handler
             msg.handler->handleMessage(msg);
         }
     }
 }
 
-xQueueHandle Looper::getMessageQueue(){
-    return messageQueue;
+Queue * Looper::getMessageQueue(){
+    return &messageQueue;
 }

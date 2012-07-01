@@ -20,11 +20,7 @@
 #ifndef HANDLER_H_
 #define HANDLER_H_
 
-/* Scheduler include files. */
-#include "FreeRTOS.h"
-#include "task.h"
-#include "queue.h"
-
+#include "QueueWrapper.h"
 #include "Looper.h"
 
 typedef struct MESSAGE Message;
@@ -37,7 +33,7 @@ typedef struct MESSAGE Message;
 class Handler {
 private:
     /** Queue on which handler posts messages */
-    xQueueHandle messageQueue;
+    Queue *messageQueue;
 public:
     Handler(Looper *looper);
     virtual void handleMessage(Message msg) =0;

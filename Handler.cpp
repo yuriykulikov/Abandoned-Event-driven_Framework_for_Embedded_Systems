@@ -18,19 +18,9 @@
  * limitations under the License.
  */
 
-/* Compiler definitions include file. */
-extern "C" {
-#include "avr_compiler.h"
-#include <string.h>
-}
-/* Scheduler include files. */
-#include "FreeRTOS.h"
-#include "task.h"
-#include "queue.h"
-
-/* Task header file */
 #include "Handler.h"
 #include "Looper.h"
+#include "QueueWrapper.h"
 
 /**
  * Creates a handler, which has to be bind to the looper task
@@ -48,7 +38,7 @@ Handler::Handler(Looper *looper) {
  * @return true if the item was successfully posted
  */
 bool Handler::sendMessage(Message msg) {
-    return xQueueSend(messageQueue, &msg, 0);
+    return messageQueue->send(&msg);
 }
 
 /**
@@ -67,7 +57,7 @@ bool Handler::sendMessage(char what, char arg1, char arg2, void *ptr) {
     msg.arg1 = arg1;
     msg.arg2 = arg2;
     msg.ptr = ptr;
-    return xQueueSend(messageQueue, &msg, 0);
+    return messageQueue->send(&msg);
 }
 
 /**
@@ -97,7 +87,7 @@ bool Handler::sendMessage(char what, char arg1, char arg2) {
  * @return true if higher priority task is woken
  */
 bool Handler::sendMessageFromISR(Message msg) {
-    return xQueueSendFromISR(messageQueue, &msg, 0);
+    return messageQueue->sendFromIsr(&msg);
 }
 /**
  * Post message with arguments and a pointer to allocated data
@@ -115,7 +105,7 @@ bool Handler::sendMessageFromISR(char what, char arg1, char arg2, void *ptr) {
     msg.arg1 = arg1;
     msg.arg2 = arg2;
     msg.ptr = ptr;
-    return xQueueSendFromISR(messageQueue, &msg, 0);
+    return messageQueue->sendFromIsr(&msg);
 }
 
 /**
