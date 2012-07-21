@@ -1,0 +1,67 @@
+
+@startuml
+
+abstract class Thread {
+    virtual void run()
+}
+class Looper
+Looper --|> Thread
+class MessageQueue
+Looper --* MessageQueue
+
+abstract class Handler {
+    void handleMessage()
+    void sendMessage(msg)
+}
+Handler --* Looper
+class ExampleHandler
+ExampleHandler --|> Handler
+ExampleHandler --* TxBuffer
+ExampleHandler --* Spi
+
+class ReaderHandler
+ReaderHandler --|> Handler
+
+class Reader
+Reader --* Spi
+
+ReaderHandler --* Reader
+ReaderHandler --* TxBuffer
+interface OnPinChangedListener
+ReaderHandler ..|> OnPinChangedListener
+
+class Timer
+Reader --* Timer
+
+class PinCHangedController
+PinCHangedController ..o OnPinChangedListener
+
+class CommandLineInterpreter {
+
+}
+CommandLineInterpreter ..o Handler
+
+class CommandLineInterpreterThread
+CommandLineInterpreterThread --|> Thread
+CommandLineInterpreterThread --* CommandLineInterpreter
+
+class LedProcessorThread
+LedProcessorThread --|> Thread
+class Leds
+LedProcessorThread --* Leds
+
+interface RxBuffer
+interface TxBuffer
+class Usart
+Usart ..|> RxBuffer
+Usart ..|> TxBuffer
+
+CommandLineInterpreterThread --* RxBuffer
+CommandLineInterpreterThread --* TxBuffer
+
+class SpiSlaveThread
+SpiSlaveThread --|> Thread
+
+
+
+@enduml
